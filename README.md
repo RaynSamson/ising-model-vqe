@@ -14,7 +14,7 @@ with periodic (PBC) or open (OBC) boundary conditions.
 
 - **`Ising_model_VQE_Oct_25.ipynb`** — Noiseless `AerSimulator` study comparing PBC and OBC symmetry-preserving ansätze across a sweep $g \in [-2.5, 2.5]$. Records per-iteration cost history through a SciPy callback, then evaluates ground-state energy error and overlap fidelity against QuSpin.
 
-- **`Ising_sb_VQE_v3.ipynb`** — Symmetry-broken VQE with a small $Z_{N-1}$ pinning field $h$ to lift the $\mathbb{Z}_2$ degeneracy. Computes the per-site magnetization $\langle M_z \rangle / N$ for $N \in \{4, 6, 8, 10, 12\}$, then performs a $1/N$ finite-size extrapolation to estimate the $N \to \infty$ value and compares against exact diagonalization.
+- **`Ising_sb_VQE_v3.ipynb`** — Symmetry-broken VQE with a small $Z_{N-1}$ pinning field $h$ to break the $\mathbb{Z}_2$ symmetry. Computes the magnetization per-site $\langle M_z \rangle / N$ for $N \in \{4, 6, 8, 10, 12\}$, then performs a $1/N$ finite-size extrapolation to estimate the $N \to \infty$ value and compares against exact diagonalization.
 
 ## Requirements
 
