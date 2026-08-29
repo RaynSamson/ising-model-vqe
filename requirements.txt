@@ -1,0 +1,12 @@
+# Core quantum stack (Qiskit 1.3+ primitives era)
+qiskit>=1.3
+qiskit-ibm-runtime
+qiskit-aer
+
+# Exact-diagonalization benchmark
+quspin
+
+# Scientific Python
+numpy
+scipy
+matplotlib

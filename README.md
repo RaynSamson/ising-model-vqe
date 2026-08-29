@@ -1,37 +1,79 @@
-# VQE for the Transverse Field Ising Model
+# VQE Studies of the Transverse-Field Ising Chain
 
-Jupyter notebooks implementing the Variational Quantum Eigensolver (VQE) for the 1D Transverse Field Ising Model (TFIM) with Qiskit and the IBM Quantum Runtime. Ground state energies and observables produced by VQE are benchmarked against exact diagonalization via [QuSpin](https://quspin.github.io/QuSpin/).
+Variational Quantum Eigensolver (VQE) studies of the 1D transverse-field Ising model (TFIM), built with Qiskit and benchmarked against exact diagonalization with [QuSpin](https://quspin.github.io/QuSpin/). Three related investigations share the same Hamiltonian and symmetry-preserving ansatz infrastructure:
 
-The TFIM Hamiltonian used throughout is
+1. **Ground-state VQE** with symmetry-preserving ansätze (periodic, open, and antiperiodic boundary conditions),
+2. **Symmetry-broken VQE** — spontaneous magnetization from a pinning field, with finite-size extrapolation to the thermodynamic limit,
+3. **Subspace-Search VQE (SSVQE)** — excited states and energy gaps from a single optimization.
 
-$$H = -J \sum_{\langle i,j \rangle} Z_i Z_j - g \sum_i X_i,$$
+A fourth directory adapts the ground-state pipeline to run on real IBM hardware.
 
-with periodic (PBC) or open (OBC) boundary conditions.
+The Hamiltonian used throughout is
 
-## Notebooks
+$$H = -J \sum_{\langle i,j \rangle} Z_i Z_j - g \sum_i X_i \;(-\, h \sum_i Z_i \text{ where a longitudinal pinning field is used}),$$
 
-- **`Ising_model_VQE_IBM_runtime_08_25.ipynb`** — VQE on either `FakeBrisbane` (noise model based on the IBM Brisbane device) or a real IBM backend selected via `QiskitRuntimeService.least_busy`. Uses a symmetry-preserving PBC ansatz (`Rxx`, `Ryy`, `Rzz` brick layers + transverse `Rx`), `optimization_level=3` transpilation with `sabre` routing, and dynamical decoupling (`XGate, XGate`) when running on hardware. COBYLA minimizes the energy via `EstimatorV2` over a sweep of transverse field strengths $g$.
+with periodic (PBC), open (OBC), or antiperiodic (APBC) boundary conditions.
 
-- **`Ising_model_VQE_Oct_25.ipynb`** — Noiseless `AerSimulator` study comparing PBC and OBC symmetry-preserving ansätze across a sweep $g \in [-2.5, 2.5]$. Records per-iteration cost history through a SciPy callback, then evaluates ground-state energy error and overlap fidelity against QuSpin.
+## Repository map
 
-- **`Ising_sb_VQE_v3.ipynb`** — Symmetry-broken VQE with a small $Z_{N-1}$ pinning field $h$ to break the $\mathbb{Z}_2$ symmetry. Computes the magnetization per-site $\langle M_z \rangle / N$ for $N \in \{4, 6, 8, 10, 12\}$, then performs a $1/N$ finite-size extrapolation to estimate the $N \to \infty$ value and compares against exact diagonalization.
+```
+ground_state/
+  Ising_model_VQE.ipynb     Main ground-state study: symmetry-preserving PBC/OBC ansätze,
+                            QuSpin comparison, estimator-variance analysis, multi-restart VQE
+  Ising_VQE_quspin.ipynb    Qiskit-free companion: the ansatz unitary built by hand in QuSpin
+  Ising_APBC.ipynb          Antiperiodic-boundary-condition variant
+symmetry_broken/
+  Ising_sb_VQE.ipynb        Symmetry-broken VQE: pinning field, magnetization per site for
+                            N = 4…12, 1/N extrapolation to N → ∞, vs. exact diagonalization
+  data/                     Magnetization data (g = 0.5)
+ssvqe/
+  SSVQE_scaling.ipynb       Subspace-search VQE: low-lying spectrum, gaps, and fidelities
+  SSVQE_v2.ipynb            Refactored SSVQE driver with optimizer callback
+hardware/
+  Ising_VQE_ibm_runtime.ipynb  IBM Runtime pipeline: native-gate ansatz decomposition,
+                               transpilation, dynamical decoupling, FakeBrisbane or real backend
+figures/                    Result figures for each subproject
+```
 
-## Requirements
+## Ground-state VQE
 
-- `qiskit`
-- `qiskit-ibm-runtime`
-- `qiskit-aer`
-- `numpy`, `scipy`, `matplotlib`
-- `quspin` (for the exact-diagonalization comparison cells)
+The ansatz preserves the model's symmetries by construction: brick-pattern layers of $R_{xx}$, $R_{yy}$, $R_{zz}$ two-qubit rotations plus a transverse $R_x$ layer, repeated `num_layers` times (default $N/2$). Energies, energy errors, and overlap fidelities are compared against QuSpin exact diagonalization across a sweep of transverse field strengths $g$.
 
-Running on real IBM hardware additionally requires a configured `QiskitRuntimeService` account. The IBM Open Plan does not support `Session()`-based execution; switch the `USE_SIMULATOR` flag to `True` (or use a paid plan) accordingly.
+<img src="figures/ground_state/symm_ansatz_Nov25.png" alt="Symmetry-preserving ansatz circuit" width="600">
 
-## Usage
+![VQE vs exact diagonalization, N=12 with noise](figures/ground_state/N=12_noisy.png)
 
-Open any notebook in Jupyter and run cells top to bottom. Key knobs:
+## Symmetry-broken VQE
 
-- `N` — number of qubits / spins
-- `gs` — array of transverse field strengths to sweep
-- `num_layers` — depth of the ansatz (defaults to `N // 2`)
-- `PBC` — boundary condition toggle (in the Oct '25 notebook)
-- `USE_SIMULATOR` — backend toggle (in the Aug '25 notebook)
+The $\mathbb{Z}_2$ symmetry of the TFIM is broken explicitly with a small longitudinal pinning field $h$, and the per-site magnetization $\langle M_z \rangle / N$ is computed for $N \in \{4, 6, 8, 10, 12\}$. A $1/N$ finite-size extrapolation then estimates the spontaneous magnetization in the thermodynamic limit, compared against exact diagonalization.
+
+![Infinite-volume extrapolation of the magnetization](figures/symmetry_broken/mag_inf_vol_extrapolation.png)
+
+## Subspace-Search VQE
+
+SSVQE optimizes a weighted sum of energies over mutually orthogonal initial states, producing ground *and* excited states from a single optimization. The notebooks study the low-lying spectrum and energy gap of the TFIM as a function of $g$, tracking state fidelities against exact eigenstates for both the symmetry-preserving and hardware-efficient ansätze.
+
+![SSVQE energy gap, N=4](figures/ssvqe/sb_gapN=4_final.png)
+
+## Running on IBM hardware
+
+`hardware/Ising_VQE_ibm_runtime.ipynb` adapts the ground-state pipeline for real devices:
+
+- the $R_{xx}R_{yy}R_{zz}$ block is decomposed by hand into a hardware-friendly sequence of CX, $R_z$, H, and SX gates (`sigma_gates`),
+- transpilation uses `optimization_level=3` with `sabre` routing and dynamical decoupling (X–X sequence),
+- energies are estimated with `EstimatorV2`, with COBYLA driving the optimization,
+- a `USE_SIMULATOR` flag switches between `FakeBrisbane` (noise model based on the IBM Brisbane device) and a real backend chosen via `QiskitRuntimeService.least_busy`.
+
+Running on real hardware requires a configured `QiskitRuntimeService` account. The IBM Open Plan does not support `Session()`-based execution; set `USE_SIMULATOR = True` (or use a paid plan) accordingly.
+
+## Environment
+
+```
+pip install -r requirements.txt
+```
+
+Key knobs common to the notebooks: `N` (number of spins), `gs` (field-strength sweep), `num_layers` (ansatz depth), `PBC` (boundary conditions), `USE_SIMULATOR` (hardware notebook only).
+
+## Status
+
+The results are complete; the notebooks are still being polished (narrative text, re-running the hardware notebook to embed outputs). A short write-up of the ground-state study is in preparation and will be added under `docs/`.
