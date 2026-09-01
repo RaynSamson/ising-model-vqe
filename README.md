@@ -3,16 +3,16 @@
 Variational Quantum Eigensolver (VQE) studies of the 1D transverse-field Ising model (TFIM), built with Qiskit and benchmarked against exact diagonalization with [QuSpin](https://quspin.github.io/QuSpin/). Three related investigations share the same Hamiltonian and symmetry-preserving ansatz infrastructure:
 
 1. **Ground-state VQE** with symmetry-preserving ansätze (periodic, open, and antiperiodic boundary conditions),
-2. **Symmetry-broken VQE** — spontaneous magnetization from a pinning field, with finite-size extrapolation to the thermodynamic limit,
-3. **Subspace-Search VQE (SSVQE)** — excited states and energy gaps from a single optimization.
+2. **Symmetry-broken VQE**: spontaneous magnetization from a pinning field, with finite-size extrapolation to the thermodynamic limit,
+3. **Subspace-Search VQE (SSVQE)**: excited states and energy gaps from a single optimization.
 
 A fourth directory adapts the ground-state pipeline to run on real IBM hardware.
 
 The Hamiltonian used throughout is
 
-$$H = -J \sum_{\langle i,j \rangle} Z_i Z_j - g \sum_i X_i \;(-\, h \sum_i Z_i \text{ where a longitudinal pinning field is used}),$$
+$$H = -J \sum_{\langle i,j \rangle} Z_i Z_j - g \sum_i X_i,$$
 
-with periodic (PBC), open (OBC), or antiperiodic (APBC) boundary conditions.
+with periodic (PBC), open (OBC), or antiperiodic (APBC) boundary conditions. The symmetry-broken VQE notebook adds a symmetry-breaking field to the 'last' qubit, $-h Z_N$.
 
 ## Repository map
 
@@ -53,7 +53,8 @@ The $\mathbb{Z}_2$ symmetry of the TFIM is broken explicitly with a small longit
 
 SSVQE optimizes a weighted sum of energies over mutually orthogonal initial states, producing ground *and* excited states from a single optimization. The notebooks study the low-lying spectrum and energy gap of the TFIM as a function of $g$, tracking state fidelities against exact eigenstates for both the symmetry-preserving and hardware-efficient ansätze.
 
-![SSVQE energy gap, N=4](figures/ssvqe/sb_gapN=4_final.png)
+![SSVQE fidelity, N=4](figures/ssvqe/ssvqe_fidelity.png)
+![SSVQE energy gap, N=4](figures/ssvqe/mass_gap.png)
 
 ## Running on IBM hardware
 
