@@ -1,6 +1,6 @@
 # VQE Studies of the Transverse-Field Ising Chain
 
-Variational Quantum Eigensolver (VQE) studies of the 1D transverse-field Ising model (TFIM), built with Qiskit and benchmarked against exact diagonalization with [QuSpin](https://quspin.github.io/QuSpin/). Three related investigations share the same Hamiltonian and symmetry-preserving ansatz infrastructure:
+Variational Quantum Eigensolver (VQE) studies of the 1D transverse-field Ising model (TFIM), built with Qiskit and benchmarked against exact diagonalization with [QuSpin](https://quspin.github.io/QuSpin/). Three related investigations share the same Hamiltonian and symmetry-preserving ansätz infrastructure:
 
 1. **Ground-state VQE** with symmetry-preserving ansätze (periodic, open, and antiperiodic boundary conditions),
 2. **Symmetry-broken VQE**: spontaneous magnetization from a pinning field, with finite-size extrapolation to the thermodynamic limit,
@@ -37,7 +37,7 @@ figures/                    Result figures for each subproject
 
 ## Ground-state VQE
 
-The ansatz preserves the model's symmetries by construction: brick-pattern layers of $R_{xx}$, $R_{yy}$, $R_{zz}$ two-qubit rotations plus a transverse $R_x$ layer, repeated `num_layers` times (default $N/2$). Energies, energy errors, and overlap fidelities are compared against QuSpin exact diagonalization across a sweep of transverse field strengths $g$.
+The ansatz preserves the model's symmetries by construction: brick-pattern layers of $R_{xx}$, $R_{yy}$, $R_{zz}$ two-qubit rotations plus a transverse $R_x$ layer, repeated `num_layers` times (default $N/2$). Each operator commutes with the Hamiltonian's symmetry group. Energies, energy errors, and fidelities are compared against QuSpin exact diagonalization (ED) across a sweep of transverse field strengths $g$. The circuit below shows the ansätz for $N=4$ (for visual simplicity), and the plot comparing VQE with ED is for $N=12$.
 
 <img src="figures/ground_state/symm_ansatz_Nov25.png" alt="Symmetry-preserving ansatz circuit" width="600">
 
@@ -45,22 +45,21 @@ The ansatz preserves the model's symmetries by construction: brick-pattern layer
 
 ## Symmetry-broken VQE
 
-The $\mathbb{Z}_2$ symmetry of the TFIM is broken explicitly with a small longitudinal pinning field $h$, and the per-site magnetization $\langle M_z \rangle / N$ is computed for $N \in \{4, 6, 8, 10, 12\}$. A $1/N$ finite-size extrapolation then estimates the spontaneous magnetization in the thermodynamic limit, compared against exact diagonalization.
+The $\mathbb{Z}_2$ symmetry of the TFIM is broken explicitly with a longitudinal pinning field $h$, and the per-site magnetization $\langle M_z \rangle / N$ is computed for $N \in \{4, 6, 8, 10, 12\}$. A $1/N$ finite-size extrapolation then estimates the spontaneous magnetization in the thermodynamic limit, compared against exact diagonalization. The relative error between extrapolations is 0.36%, which lies beyond the estimated uncertainty bounds. Since the VQE values are consistently greater than ED, it is likely that a systematic error remains unaccounted for.   
 
 ![Infinite-volume extrapolation of the magnetization](figures/symmetry_broken/mag_inf_vol_extrapolation.png)
 
 ## Subspace-Search VQE
 
-SSVQE optimizes a weighted sum of energies over mutually orthogonal initial states, producing ground *and* excited states from a single optimization. The notebooks study the low-lying spectrum and energy gap of the TFIM as a function of $g$, tracking state fidelities against exact eigenstates for both the symmetry-preserving and hardware-efficient ansätze.
+SSVQE optimizes a weighted sum of energies over mutually orthogonal initial states, producing ground *and* excited states from a single optimization. The notebooks study the low-lying spectrum and energy gap of the TFIM as a function of $g$, tracking state fidelities against exact eigenstates for the symmetry-preserving ansätz.
 
-![SSVQE fidelity, N=4](figures/ssvqe/ssvqe_fidelity.png)
+![SSVQE fidelity, N=4](figures/ssvqe/N=4.png)
 ![SSVQE energy gap, N=4](figures/ssvqe/mass_gap.png)
 
 ## Running on IBM hardware
 
 `hardware/Ising_VQE_ibm_runtime.ipynb` adapts the ground-state pipeline for real devices:
 
-- the $R_{xx}R_{yy}R_{zz}$ block is decomposed by hand into a hardware-friendly sequence of CX, $R_z$, H, and SX gates (`sigma_gates`),
 - transpilation uses `optimization_level=3` with `sabre` routing and dynamical decoupling (X–X sequence),
 - energies are estimated with `EstimatorV2`, with COBYLA driving the optimization,
 - a `USE_SIMULATOR` flag switches between `FakeBrisbane` (noise model based on the IBM Brisbane device) and a real backend chosen via `QiskitRuntimeService.least_busy`.
